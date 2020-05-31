@@ -1,0 +1,3 @@
+[submodule "ARLreader"]
+	path = ARLreader
+	url = https://github.com/martin-rdz/ARLreader
