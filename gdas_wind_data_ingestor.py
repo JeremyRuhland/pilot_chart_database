@@ -124,8 +124,10 @@ for weekFileNum, weekFile in enumerate(gdasFiles):
 
                 dataTable.append((windTime, lat, lon, windDirVal, windVelVal))
 
-    # Write weekFile's wind data to database
-    dbc.executemany("INSERT INTO wind VALUES (?, ?, ?, ?, ?)", dataTable)
+        # Write daily wind data to database
+        # Weekly wind data writes are more efficent but there is some internal
+        # limit that truncates beyond ~6 days of data.
+        dbc.executemany("INSERT INTO wind VALUES (?, ?, ?, ?, ?)", dataTable)
 
 # Close database
 db.commit()

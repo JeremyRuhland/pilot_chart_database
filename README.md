@@ -9,9 +9,13 @@ The script starts by downloading the previous decade of global weather data file
 The wind direction/speed database product is also useful for mission simulation.
 
 ### Installation
+Install pyximport and numpy. Pyximport was unable to find numpy headers when I installed via pip3 despite the files being in the right place but apt-get install works fine.
+
 After cloning repo, initialize submodules to pull down [ARLreader](https://github.com/martin-rdz/ARLreader)
 
 ```bash
+sudo apt-get install python3-pyximport python3-numpy
+
 git submodule init
 git submodule update
 ```
@@ -21,13 +25,15 @@ Run `./pilot_chart_database_generator.sh` to begin the process.
 
 Data download takes about a day on a broadband connection and requires around 321Gb of storage space.
 
-The `gdas_global_wind_decade.sqlite3` database will be approximately xxGb and can be compressed with bz2 to about xxGb.
+The `gdas_global_wind_decade.sqlite3` database will be approximately 12Gb and can be compressed with bz2 to 6Gb. Database creation takes about 8 hours.
 
-The final pilot chart database will be approximately xxMb.
+The final pilot chart database will be approximately xxMb. Processing takes about xxmin.
 
 ### Future
+Preliminary profiling shows majority of time in database generator is spent executing writes to the DB. Batching multiple weeks worth of writes will speed this up with memory use tradeoff (how much?). Parallelization could also provide smaller magnitude speedup but requires same memory increase.
+
 Additional data which would be useful to include in the pilot chart database at some future point is:
 
  * Ocean currents
  * Wave height
- * Insolation
+ * Cloud cover
