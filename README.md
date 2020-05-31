@@ -11,6 +11,11 @@ The wind direction/speed database product is also useful for mission simulation.
 ### Installation
 After cloning repo, initialize submodules to pull down [ARLreader](https://github.com/martin-rdz/ARLreader)
 
+```bash
+git submodule init
+git submodule update
+```
+
 ### Running
 Run `./pilot_chart_database_generator.sh` to begin the process.
 
