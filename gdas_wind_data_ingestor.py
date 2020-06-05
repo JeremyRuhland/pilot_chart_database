@@ -4,7 +4,7 @@
 Converts global surface level wind data from ARL gdas weekfiles into a
 sqlite3 DB. This is used as part of the pilot chart database project and is
 executed by the pilot chart database generator shell script.
-Estimated execution time for 10 years of data is 8h.
+Estimated execution time for 10 years of data is 4h.
 
 Schema is (timestamp, lat, lon, windDir, windVel) stored as real (float64).
 
@@ -76,11 +76,12 @@ db = sqlite3.connect('gdas_global_wind_decade.sqlite3')
 dbc = db.cursor()
 
 # Set up tables
-dbc.execute("CREATE TABLE wind (timestamp real, lat real, lon real, windDir real, windVel real)")
+dbc.execute("CREATE TABLE wind (month integer, lat integer, lon integer, windDir real, windVel real)")
 
 # Collect all gdas weekfiles in directory
 gdasFiles = [x for x in os.listdir() if ('gdas1' and '.w') in x]
 
+dataTable = []
 
 # Loop for all files
 for weekFileNum, weekFile in enumerate(gdasFiles):
@@ -94,8 +95,6 @@ for weekFileNum, weekFile in enumerate(gdasFiles):
     for dayNum in range(ArlData.indexinfo.d, ArlData.indexinfo.d + daysInWeekFile):
         print(' D{}/{}'.format(dayNum, ArlData.indexinfo.d + daysInWeekFile - 1))
 
-        dataTable = []
-
         # Loop for each 3h data grid
         for hourNum in (range(0, 24, 3)):
             print('  H{}'.format(hourNum))
@@ -108,7 +107,8 @@ for weekFileNum, weekFile in enumerate(gdasFiles):
             windDir, windVel = Ar.wind_from_components(dataU, dataV)
 
             # Create timestamp for this wind field
-            windTime = datetime.datetime((2000 + ArlData.indexinfo.y), ArlData.indexinfo.m, dayNum, hourNum).timestamp()
+            #windTime = datetime.datetime((2000 + ArlData.indexinfo.y), ArlData.indexinfo.m, dayNum, hourNum).timestamp()
+            windMonth = ArlData.indexinfo.m
 
             # Assemble lists of [timestamp, lat, lon, windDir, windVel] for dataTable
             # x is a tuple of type ((lon, lat), val)
@@ -122,12 +122,17 @@ for weekFileNum, weekFile in enumerate(gdasFiles):
                 windDirVal = x[1]
                 windVelVal = windVel[lonIdx][latIdx]
 
-                dataTable.append((windTime, lat, lon, windDirVal, windVelVal))
+                dataTable.append((windMonth, lat, lon, windDirVal, windVelVal))
 
         # Write daily wind data to database
         # Weekly wind data writes are more efficent but there is some internal
         # limit that truncates beyond ~6 days of data.
-        dbc.executemany("INSERT INTO wind VALUES (?, ?, ?, ?, ?)", dataTable)
+        if len(dataTable) >= 3127680:
+            dbc.executemany("INSERT INTO wind VALUES (?, ?, ?, ?, ?)", dataTable)
+            dataTable = []
+
+if len(dataTable) >= 1:
+    dbc.executemany("INSERT INTO wind VALUES (?, ?, ?, ?, ?)", dataTable)
 
 # Close database
 db.commit()

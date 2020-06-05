@@ -25,12 +25,12 @@ Run `./pilot_chart_database_generator.sh` to begin the process.
 
 Data download takes about a day on a broadband connection and requires around 321Gb of storage space.
 
-The `gdas_global_wind_decade.sqlite3` database will be approximately 12Gb and can be compressed with bz2 to 6Gb. Database creation takes about 8 hours.
+The `gdas_global_wind_decade.sqlite3` database will be approximately 72Gb and can be compressed with bz2 to 37Gb. Database creation takes about 4 hours.
 
 The final pilot chart database will be approximately xxMb. Processing takes about xxmin.
 
 ### Future
-Preliminary profiling shows majority of time in database generator is spent executing writes to the DB. Batching multiple weeks worth of writes will speed this up with memory use tradeoff (how much?). Parallelization could also provide smaller magnitude speedup but requires same memory increase.
+Preliminary profiling shows majority of time in database generator is spent executing writes to the DB. ~~Batching multiple weeks worth of writes will speed this up with memory use tradeoff (how much?).~~ There is apparently a sql command length limit that prevents more 6 days of data to be written at once. A rolling accumulator that writes every 6 days would provide considerable speedup over hourly writes. Parallelization of ARL data decode could also provide a smaller magnitude speedup but results in increased memory usage.
 
 Additional data which would be useful to include in the pilot chart database at some future point is:
 
